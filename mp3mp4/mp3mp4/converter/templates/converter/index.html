@@ -1,0 +1,400 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MP3/MP4 Downloader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ff6b9d 0%, #c86dd7 50%, #ff97c1 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            top: -100px;
+            right: -100px;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+            border-radius: 50%;
+            bottom: -150px;
+            left: -150px;
+            animation: float 8s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(30px, 30px) scale(1.1); }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            box-shadow: 0 30px 80px rgba(255, 107, 157, 0.4);
+            padding: 50px 40px;
+            max-width: 600px;
+            width: 100%;
+            animation: fadeIn 0.6s ease;
+            position: relative;
+            z-index: 1;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            color: #d63384;
+            margin-bottom: 15px;
+            font-size: 2.2em;
+            text-align: center;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(214, 51, 132, 0.1);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #c2185b;
+            font-size: 15px;
+            margin-bottom: 35px;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #ffe0f0 0%, #ffc1e3 100%);
+            border-radius: 12px;
+            border: 2px solid #ffc1e3;
+            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.15);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            color: #c2185b;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-align: left;
+            font-size: 19px;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 18px 20px;
+            border: 3px solid #ffc1e3;
+            border-radius: 15px;
+            font-size: 17px;
+            transition: all 0.3s ease;
+            background: #fff;
+            color: #333;
+            min-height: 55px;
+        }
+
+        input[type="text"] {
+            font-size: 18px;
+            padding: 25px 24px;
+            min-height: 80px;
+        }
+
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #ff6b9d;
+            box-shadow: 0 0 0 4px rgba(255, 107, 157, 0.15);
+            transform: translateY(-2px);
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #ff6b9d 0%, #ff97c1 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(255, 107, 157, 0.5);
+            background: linear-gradient(135deg, #ff5589 0%, #ff85b1 100%);
+        }
+
+        button:active {
+            transform: translateY(-1px);
+        }
+
+        .error {
+            background: linear-gradient(135deg, #ffe0eb 0%, #ffc5d9 100%);
+            color: #c2185b;
+            padding: 18px;
+            border-radius: 15px;
+            margin-top: 25px;
+            border-left: 5px solid #ff6b9d;
+            text-align: left;
+            box-shadow: 0 5px 20px rgba(255, 107, 157, 0.2);
+        }
+
+        .progress-container {
+            margin: 35px 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background: linear-gradient(135deg, #ffc1e3 0%, #ffe0f0 100%);
+            height: 35px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: inset 0 3px 8px rgba(255, 107, 157, 0.15);
+            border: 2px solid #ffc1e3;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b9d 0%, #c86dd7 50%, #ff97c1 100%);
+            width: 0%;
+            border-radius: 18px;
+            color: white;
+            text-align: center;
+            line-height: 35px;
+            font-weight: 700;
+            transition: width 0.4s ease;
+            box-shadow: 0 3px 10px rgba(255, 107, 157, 0.4);
+            background-size: 200% 200%;
+            animation: gradientShift 3s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .progress-status {
+            text-align: center;
+            margin-top: 15px;
+            color: #c2185b;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .actions {
+            margin-top: 35px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .actions a {
+            text-decoration: none;
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, #ff6b9d 0%, #c86dd7 100%);
+            box-shadow: 0 8px 25px rgba(200, 109, 215, 0.4);
+        }
+
+        .btn-download:hover {
+            box-shadow: 0 12px 35px rgba(200, 109, 215, 0.6);
+            background: linear-gradient(135deg, #ff5589 0%, #b85cc7 100%);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #ffb3d9 0%, #ffc1e3 100%);
+            color: #c2185b;
+            box-shadow: 0 6px 20px rgba(255, 179, 217, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #ffa3c9 0%, #ffb1d3 100%);
+            box-shadow: 0 10px 30px rgba(255, 179, 217, 0.5);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(255, 107, 157, 0.3);
+            border-radius: 50%;
+            border-top-color: #ff6b9d;
+            animation: spin 0.8s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .decorative-circle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.6;
+        }
+
+        .circle-1 {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ff97c1 0%, #ffc1e3 100%);
+            top: -20px;
+            right: -20px;
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        .circle-2 {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #c86dd7 0%, #ff97c1 100%);
+            bottom: 20px;
+            left: -10px;
+            animation: pulse 5s ease-in-out infinite reverse;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.6; }
+            50% { transform: scale(1.2); opacity: 0.4; }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 40px 25px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            button {
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="decorative-circle circle-1"></div>
+        <div class="decorative-circle circle-2"></div>
+
+        <h1>🎵 MP3 / 🎥 MP4 Downloader</h1>
+        <p class="subtitle">Can convert YouTube, SoundCloud, and many other video/music format to MP3 and MP4.</p>
+
+        {% if not download_id %}
+        <form method="POST" id="downloadForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_url">✨ Video URL:</label>
+                {{ form.url }}
+            </div>
+
+            <div class="form-group">
+                <label for="id_format">💫 Format:</label>
+                {{ form.format }}
+            </div>
+
+            <button type="submit">🚀 Convert Now</button>
+        </form>
+        {% endif %}
+
+        {% if download_id %}
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div id="progressFill" class="progress-fill">0%</div>
+            </div>
+            <div class="progress-status" id="progressStatus">
+                <span class="spinner"></span> Processing your file...
+            </div>
+        </div>
+
+        <div class="actions" id="actionButtons" style="display:none;">
+            <a id="downloadLink" href="#">
+                <button class="btn-download">⬇️ Download Now</button>
+            </a>
+            <form method="get" action="{% url 'home' %}" style="display:inline;">
+                <button type="submit" class="btn-secondary">⬅️ Convert Another File</button>
+            </form>
+        </div>
+
+        <script>
+            const downloadId = "{{ download_id }}";
+            const progressFill = document.getElementById("progressFill");
+            const progressStatus = document.getElementById("progressStatus");
+            const actions = document.getElementById("actionButtons");
+            const downloadLink = document.getElementById("downloadLink");
+            let errorCount = 0;
+            const maxErrors = 5;
+
+            const interval = setInterval(() => {
+                fetch(`/progress/${downloadId}/`)
+                .then(res => {
+                    if (!res.ok) throw new Error('Network response was not ok');
+                    return res.json();
+                })
+                .then(data => {
+                    errorCount = 0;
+
+                    const percent = Math.min(100, Math.max(0, data.percent || 0));
+                    progressFill.style.width = percent + "%";
+                    progressFill.innerText = percent + "%";
+
+                    if(data.done) {
+                        clearInterval(interval);
+                        progressStatus.innerHTML = '✅ Conversion complete! 💖';
+                        actions.style.display = "flex";
+                        downloadLink.href = `/download/${downloadId}/`;
+                    } else if (data.status) {
+                        progressStatus.innerHTML = `<span class="spinner"></span> ${data.status}`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Progress check failed:', error);
+                    errorCount++;
+
+                    if (errorCount >= maxErrors) {
+                        clearInterval(interval);
+                        progressStatus.innerHTML = '⚠️ Connection lost. Please refresh the page.';
+                        progressStatus.style.color = '#c2185b';
+                    }
+                });
+            }, 1000);
+        </script>
+        {% endif %}
+
+        {% if error %}
+            <div class="error">⚠️ <strong>Error:</strong> {{ error }}</div>
+        {% endif %}
+    </div>
+</body>
+</html>
