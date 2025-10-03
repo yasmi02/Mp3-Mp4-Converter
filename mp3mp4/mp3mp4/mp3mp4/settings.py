@@ -11,7 +11,7 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
-# Application definition
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -55,7 +55,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'mp3mp4.wsgi.application'
 
 
-# Database
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -80,15 +80,15 @@ USE_I18N = True
 USE_TZ = True
 
 
-# ✅ Static files (CSS, JS, Images)
+
 STATIC_URL = '/static/'
 
-# Where Django will look for extra static files (besides each app’s /static/)
+
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
-# Where collected static files will be placed (for production)
+
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
